@@ -3,8 +3,8 @@ const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 
 let games = [];
-const userWebSocketMap = {};
-const wss = new WebSocket.Server({ port: 8080 });
+let userWebSocketMap = {};
+const wss = new WebSocket.Server({ port: 8081 });
 const CLIENT_ID = "1nbjcn2p356d6eb8760os6qo1h"
 const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
     region: 'us-east-1'
@@ -104,15 +104,21 @@ async function startGameUser(ws, data){
     if(usernames.length < 2) return;
     const [username1, username2] = usernames.splice(0, 2);
     console.log(usernames)
+    const game1 = games.find((game) => game.username1 === username1)
+    const game2 = games.find((game) => game.username2 === username2)
 
-    const gameID = uuidv4();
-    games.push({ gameID, username1, username2 });
+    if(!game1 && !game2){
+        const gameID = uuidv4();
+        games.push({ gameID, username1, username2 });
+        userWebSocketMap[username1].send(JSON.stringify({ type: 'game_start', gameID, isX: true }));
+        userWebSocketMap[username2].send(JSON.stringify({ type: 'game_start', gameID, isX: false }));
+    }
+    else{
+        userWebSocketMap[username1].send(JSON.stringify({ type: 'game_start', gameID:game1.gameID, isX: true }));
+        userWebSocketMap[username2].send(JSON.stringify({ type: 'game_start', gameID:game2.gameID, isX: false }));
+    }
     console.log(games)
 
-    userWebSocketMap[username1].send(JSON.stringify({ type: 'game_start', gameID, isX: true }));
-    userWebSocketMap[username2].send(JSON.stringify({ type: 'game_start', gameID, isX: false }));
-    delete userWebSocketMap[username1];
-    delete userWebSocketMap[username2];
 }
 
 async function handleRegister(ws, data) {
@@ -200,5 +206,7 @@ async function handleGameEnd(ws, data) {
     if(!valid) return;
 
     const {gameID} = data;
+    games = []
+    userWebSocketMap = {}
     games = games.filter(game => game.id !== gameID);
 }

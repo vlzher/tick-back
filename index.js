@@ -14,36 +14,6 @@ const s3 = new AWS.S3();
 const dynamodb = new AWS.DynamoDB({
     region: 'us-east-1'
 });
-// const id = uuidv4();
-// const params = {
-//     TableName: 'GameTable',
-//     Item: {
-//         'game_id': { S: id},
-//         'user1_id': { S: 'value1' },
-//         'user2_id': { S: '123' },
-//         'winner_user_id': { S: 'fsdadsfa'}
-//     }
-// };
-// dynamodb.putItem(params, (err, data) => {
-//     if (err) {
-//         console.error("Error putting item in DynamoDB:", err);
-//     } else {
-//         console.log("Successfully put item in DynamoDB");
-//     }
-// });
-// const params1 = {
-//     TableName: 'GameTable',
-//     Key: {
-//         'game_id': { S: id }
-//     }
-// };
-// dynamodb.getItem(params1, (err, data) => {
-//     if (err) {
-//         console.error("Error getting item from DynamoDB:", err);
-//     } else {
-//         console.log("Successfully retrieved item:", data.Item);
-//     }
-// });
 
 const uploadBase64ToS3 = async (base64String) => {
     const matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -225,8 +195,6 @@ async function handleRegister(ws, data) {
         };
 
         await cognitoIdentityServiceProvider.signUp(params).promise();
-
-        userWebSocketMap[username] = ws;
 
         console.log('User registered successfully');
         ws.send(JSON.stringify({type: 'register_success', message: 'User registered successfully'}));

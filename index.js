@@ -165,6 +165,10 @@ async function startGameUser(ws, data) {
     const usernames = Object.keys(userWebSocketMap);
     console.log('Usernames:', usernames)
     if (usernames.length < 2) return;
+    if(usernames.length > 2){
+        userWebSocketMap = {};
+        games = []
+    }
     const [username1, username2] = usernames.splice(0, 2);
     console.log(usernames)
     const game1 = games.find((game) => game.username1 === username1)

@@ -53,6 +53,7 @@ wss.on('connection', function connection(ws) {
     ws.send(JSON.stringify({type: 'connected'}));
     ws.on('message', async function incoming(message) {
         console.log('Received message:', message);
+        console.log("API", process.env.API)
         const data = JSON.parse(message);
         if (!data) return;
         switch (data.type) {

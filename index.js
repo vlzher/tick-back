@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const AWS = require('aws-sdk');
 const {v4: uuidv4} = require('uuid');
+const {post} = require("axios");
 
 let games = [];
 let userWebSocketMap = {};
@@ -9,6 +10,7 @@ const CLIENT_ID = "1nbjcn2p356d6eb8760os6qo1h"
 const cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider({
     region: 'us-east-1'
 });
+const lambdaURL = process.env.API+"/update-ranking";
 
 const s3 = new AWS.S3();
 const dynamodb = new AWS.DynamoDB({
@@ -53,7 +55,7 @@ wss.on('connection', function connection(ws) {
     ws.send(JSON.stringify({type: 'connected'}));
     ws.on('message', async function incoming(message) {
         console.log('Received message:', message);
-        console.log("API", process.env.API)
+        console.log("API", )
         const data = JSON.parse(message);
         if (!data) return;
         switch (data.type) {
@@ -76,6 +78,9 @@ wss.on('connection', function connection(ws) {
             case 'gameEnd':
                 await handleGameEnd(ws, data);
                 break;
+            case 'updateRanking':
+                await updateRanking(ws,data);
+                break;
             default:
                 console.log('Unknown message type:', data.type);
         }
@@ -86,6 +91,16 @@ wss.on('connection', function connection(ws) {
     });
 });
 
+async function updateRanking(ws,data){
+    console.log("Update ranking", data);
+    const {user_id, isWin} = data;
+    post(lambdaURL,{user_id, isWin}).then(
+        (res) => console.log(res)
+    )
+        .catch(err =>
+            console.log(err)
+        )
+}
 
 async function refreshToken(ws, data) {
     console.log('Handling refresh token request:', data);

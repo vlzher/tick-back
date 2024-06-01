@@ -168,6 +168,7 @@ async function startGameUser(ws, data) {
     if(usernames.length > 2){
         userWebSocketMap = {};
         games = []
+        return;
     }
     const [username1, username2] = usernames.splice(0, 2);
     console.log(usernames)
